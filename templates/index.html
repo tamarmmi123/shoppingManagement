@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title>Purchases</title>
+{% endblock %}
+
+{% block body %}
+<h2>Your Purchases</h2>
+{% if purchases|length == 0 %}
+<h4>You do not have any purchases, buy things!</h4>
+{% else %}
+    <table>
+        <tr>
+            <th>ProdName</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Date</th>
+        </tr>
+        {% for purchase in purchases: %}
+        <tr>
+            <td>{{purchase.prodName}}</td>
+            <td>{{purchase.qty}}</td>
+            <td>{{purchase.price}}</td>
+            <td>{{purchase.category}}</td>
+            <td>{{purchase.date.date()}}</td>
+            <td>
+                <a href="/update/{{purchase.id}}">Update</a>
+                <a href="/delete/{{purchase.id}}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    <form action="/" method="post">
+        <input id="title" name="title" type="text">
+        <button>Add</button>
+    </form>
+{% endblock %}
