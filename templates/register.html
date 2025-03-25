@@ -6,10 +6,12 @@
 
 {% block body %}
     <h2>Register</h2>
-    <form action="../templates/purchases.html">
-        <input type="password" placeholder="Password">
-        <input type="email" placeholder="email">
-        <button>Register</button>
-        <p>Already have an acount?<a href="/templates/login.html">Log in</a></p>
+    <form action="{{ url_for('register') }}" method="post">
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Register</button>
+        <p>Already have an acount?
+            <a href="{{ url_for('login') }}">Log in</a>
+        </p>
     </form>
 {% endblock %}

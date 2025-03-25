@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title>{{ user.email }}'s Purchases</title>
+{% endblock %}
+
+{% block body %}
+<h2>Welcome, {{ user.email }}! Here are your purchases:</h2>
+
+{% if purchases|length == 0 %}
+    <h4>You have no purchases yet.</h4>
+{% else %}
+    <table>
+        <tr>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Category</th>
+            <th>Date</th>
+        </tr>
+        {% for purchase in purchases %}
+        <tr>
+            <td>{{ purchase.prodName }}</td>
+            <td>{{ purchase.qty }}</td>
+            <td>${{ purchase.price }}</td>
+            <td>{{ purchase.category }}</td>
+            <td>{{ purchase.date.strftime('%Y-%m-%d') }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+{% endblock %}

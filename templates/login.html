@@ -6,10 +6,10 @@
 
 {% block body %}
     <h2>Login</h2>
-    <form action="../templates/purchases.html{{user.id}}">
+    <form action="{{ url_for('login') }}" method="post">
         <input type="password" placeholder="Password">
         <input type="email" placeholder="email">
         <button>Log in</button>
-        <p>Don't have an acount?<a href="/templates/register.html">Register</a></p>
+        <p>Don't have an acount?<a href="{{ url_for('register') }}">Register</a></p>
     </form>
 {% endblock %}
