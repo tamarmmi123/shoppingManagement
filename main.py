@@ -5,6 +5,7 @@ from models.Purchase import Purchase
 from datetime import datetime
 
 
+
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///shoppingManagement.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -57,7 +58,6 @@ def register():
             error_message = "User already exists. Please log in."
         
         if error_message:
-            print("Error: ", error_message)
             return render_template("register.html", error=error_message)
         
         user = User(email=email, password=password)
@@ -92,32 +92,83 @@ def purchases():
 
 @app.route("/add_purchase", methods=["GET", "POST"])
 def add_purchase():
+    error_message = None
+    seccess_message = None
     if "user_id" not in session:
-        flash("You must be logged in to add a purchase!", "danger")
+        error_message = "You must be logged in to add a purchase!"
         return redirect(url_for("login"))
-    
+        
     user_id = session["user_id"]
     prod_name = request.form.get("prodName")
     qty = request.form.get("qty")
     price = request.form.get("price")
     category = request.form.get("category")
+    date_purchased = request.form.get("date")
     
     if not prod_name or not qty or not price or not category:
-        flash("All fields are required!", "danger")
+        error_message = "All fields are required!", "danger"
         return redirect(url_for("add_purchase"))
+
+    date_obj = datetime.strptime(date_purchased, "%Y-%m-%d")
 
     new_purchase = Purchase(
         prodName=prod_name,
         qty=int(qty),
         price=float(price),
         category=category,
+        date=date_obj,
         user_id=user_id
     )
 
     db.session.add(new_purchase)
     db.session.commit()
 
-    flash("Purchase added successfully!", "success")
+    
+    seccess_message ="Purchase added successfully!"
+    return redirect(url_for("purchases"))
+
+@app.route("/update_purchase/<int:id>", methods=["GET", "POST"])
+def update_purchase(id):
+    error_message = None
+    success_message = None
+    if "user_id" not in session:
+        error_message = "You must be logged in to add a purchase!"
+        return redirect(url_for("login"))
+    
+    purchase = Purchase.query.get(id)
+
+    if not purchase:
+        error_message = "Purchase not found!"
+        return redirect(url_for("purchases"))
+
+    if request.method == "GET":
+        return render_template("updatePurchase.html", purchase=purchase)
+
+    purchase.prodName = request.form["prodName"]
+    purchase.qty = int(request.form["qty"])
+    purchase.price = float(request.form["price"])
+    purchase.category = request.form["category"]
+    purchase.date = datetime.strptime(request.form["date"], "%Y-%m-%d")
+
+    db.session.commit()
+    success_message = "Purchase updated successfully!"
+    return redirect(url_for("purchases"))
+
+@app.route("/delete_purchase/<int:id>", methods=["GET", "DELETE"])
+def delete_purchase(id):
+    error_message = None
+    if "user_id" not in session:
+        error_message = "You must be logged in to add a purchase!"
+        return redirect(url_for("login"))
+    
+    purchase = Purchase.query.get(id)
+
+    if not purchase:
+        error_message = "Purchase not found!"
+        return redirect(url_for("purchases"))
+    
+    db.session.delete(purchase)
+    db.session.commit()
     return redirect(url_for("purchases"))
 
 

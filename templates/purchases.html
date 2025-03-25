@@ -25,7 +25,12 @@
             <td>₪{{ purchase.price }}</td>
             <td>{{ purchase.category }}</td>
             <td>{{ purchase.date.strftime('%Y-%m-%d') }}</td>
+            <td>
+                <a href="/update_purchase/{{purchase.id}}">Update</a>
+                <a href="/delete_purchase/{{purchase.id}}" onclick="return confirm('Are you sure you want to delete this purchase?')">Delete</a>
+            </td>
         </tr>
+        
         {% endfor %}
     </table>
 {% endif %}
@@ -36,7 +41,7 @@
         <input type="number" name="qty" placeholder="Quantity" required>
         <input type="number" step="0.01" name="price" placeholder="Price" required>
         <input type="text" name="category" placeholder="Category" required>
-        <input type="date" name="DatePurchased" placeholder="Date Purchased">
+        <input type="date" name="date" required>
         <button type="submit">Add Purchase</button>
     </form>
 

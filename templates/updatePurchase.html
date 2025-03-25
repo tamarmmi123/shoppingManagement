@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title>Update Task</title>
+{% endblock %}
+
+{% block body %}
+    <h1>Update Purchase</h1>
+    <form action="{{ url_for('update_purchase', id=purchase.id) }}" method="POST">
+        <input type="text" name="prodName" placeholder="Product Name" required value="{{ purchase.prodName }}">
+        <input type="number" name="qty" placeholder="Quantity" required value="{{purchase.qty}}">
+        <input type="number" step="0.01" name="price" placeholder="Price" required value="{{purchase.price}}">
+        <input type="text" name="category" placeholder="Category" required value="{{purchase.category}}">
+        <input type="date" name="date" value="{{purchase.date}}">
+        <button type="submit">Update Purchase</button>
+    </form>
+{% endblock %}
