@@ -21,46 +21,44 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    error_message = None
+
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
         
-        if not email or not password:
-            flash("Email and password are required!", "danger")
-            return redirect(url_for("login"))
-
         user = User.query.filter_by(email=email).first()
 
-        if user:
-            print(f"Stored password: {user.password}")
-            print(f"Entered password: {password}")
+        if not email or not password:
+            error_message = "Email and password are required!"
+        elif not user or user.password != password:
+            error_message = "Invalid email or password!"
 
-        if user and user.password == password:
-            session["user_id"] = user.id
-            session.permanent = True
-            flash("Login successful!", "success")
-            return redirect(url_for("add_purchase"))
-        else:
-            flash("Invalid email or password", "danger")
-            return redirect(url_for("login"))
+        if error_message:
+            return render_template("login.html", error=error_message)
+
+        session["user_id"] = user.id
+        return redirect(url_for("purchases"))
 
     return render_template("login.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    error_message = None
+
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
 
         if not email or not password:
-            flash("Email and password are required!", "danger")
-            return redirect(url_for("register"))
+            error_message = "Email and password are required!"
+        elif User.query.filter_by(email=email).first():
+            error_message = "User already exists. Please log in."
         
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            flash("User already exists. Please log in.", "warning")
-            return redirect(url_for("login"))
+        if error_message:
+            print("Error: ", error_message)
+            return render_template("register.html", error=error_message)
         
         user = User(email=email, password=password)
         db.session.add(user)
