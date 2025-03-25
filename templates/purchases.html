@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    <title>{{ user.email }}'s Purchases</title>
+    <title>Your Purchases</title>
 {% endblock %}
 
 {% block body %}
-<h2>Welcome, {{ user.email }}! Here are your purchases:</h2>
+<h2>Here are your purchases:</h2>
 
 {% if purchases|length == 0 %}
     <h4>You have no purchases yet.</h4>
@@ -29,4 +29,14 @@
         {% endfor %}
     </table>
 {% endif %}
+
+<h3>Add a New Purchase</h3>
+    <form action="{{ url_for('add_purchase') }}" method="post">
+        <input type="text" name="prodName" placeholder="Product Name" required>
+        <input type="number" name="qty" placeholder="Quantity" required>
+        <input type="number" step="0.01" name="price" placeholder="Price" required>
+        <input type="text" name="category" placeholder="Category" required>
+        <button type="submit">Add Purchase</button>
+    </form>
+
 {% endblock %}
