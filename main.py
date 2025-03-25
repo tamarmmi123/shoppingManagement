@@ -19,25 +19,6 @@ with app.app_context():
 def index():
     return render_template("index.html")
 
-# @app.route("/login", methods=["GET", "POST"])
-# def login():
-#     if request.method == "POST":
-#         email = request.form.get("email")
-#         password = request.form.get("password")
-        
-#         user = User.query.filter_by(email=email, password=password).first()
-#         if not user:
-#             flash("Invalid email or password!", "danger")
-#             return redirect(url_for("login"))
-
-#         session["user_id"] = user.id
-#         flash("Logged in successfully!", "success")
-#         return redirect(url_for("purchases"))
-
-#     flash("Invalid email or password", "danger")
-#     return render_template("login.html")
-
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -116,32 +97,30 @@ def add_purchase():
     if "user_id" not in session:
         flash("You must be logged in to add a purchase!", "danger")
         return redirect(url_for("login"))
-    if request.method == "POST":
-        user_id = session["user_id"]
-        prod_name = request.form.get("prodName")
-        qty = request.form.get("qty")
-        price = request.form.get("price")
-        category = request.form.get("category")
     
-        if not prod_name or not qty or not price or not category:
-            flash("All fields are required!", "danger")
-            return redirect(url_for("add_purchase"))
-
-        new_purchase = Purchase(
-            prodName=prod_name,
-            qty=int(qty),
-            price=float(price),
-            category=category,
-            user_id=user_id
-        )
-
-        db.session.add(new_purchase)
-        db.session.commit()
-
-        flash("Purchase added successfully!", "success")
+    user_id = session["user_id"]
+    prod_name = request.form.get("prodName")
+    qty = request.form.get("qty")
+    price = request.form.get("price")
+    category = request.form.get("category")
+    
+    if not prod_name or not qty or not price or not category:
+        flash("All fields are required!", "danger")
         return redirect(url_for("add_purchase"))
-    
-    return render_template("purchases.html")
+
+    new_purchase = Purchase(
+        prodName=prod_name,
+        qty=int(qty),
+        price=float(price),
+        category=category,
+        user_id=user_id
+    )
+
+    db.session.add(new_purchase)
+    db.session.commit()
+
+    flash("Purchase added successfully!", "success")
+    return redirect(url_for("purchases"))
 
 
 if __name__ == "__main__":

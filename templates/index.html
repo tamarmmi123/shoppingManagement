@@ -1,42 +1,19 @@
 {% extends 'base.html' %}
+
 {% block head %}
-    <title>Purchases</title>
+    <title>Welcome</title>
 {% endblock %}
 
 {% block body %}
-<h2>Your Purchases</h2>
-{% if purchases|length == 0 %}
-<h4>You do not have any purchases, buy things!</h4>
-{% else %}
-    <table>
-        <tr>
-            <th>ProdName</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>Category</th>
-            <th>Date</th>
-        </tr>
-        {% for purchase in purchases: %}
-        <tr>
-            <td>{{purchase.prodName}}</td>
-            <td>{{purchase.qty}}</td>
-            <td>{{purchase.price}}</td>
-            <td>{{purchase.category}}</td>
-            <td>{{purchase.date.date()}}</td>
-            <td>
-                <a href="/update/{{purchase.id}}">Update</a>
-                <a href="/delete/{{purchase.id}}">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+    <h1>Welcome to Your Shopping Management</h1>
+    
+    {% if session.get("user_id") %}
+        <p>You are logged in!</p>
+        <a href="{{ url_for('purchases') }}"><button>Go to Purchases</button></a>
+        <a href="{{ url_for('logout') }}"><button>Logout</button></a>
+    {% else %}
+        <p>Please log in or register to manage your purchases.</p>
+        <a href="{{ url_for('login') }}"><button>Login</button></a>
+        <a href="{{ url_for('register') }}"><button>Register</button></a>
     {% endif %}
-    <form action="/" method="post">
-        <input type="text" placeholder="Product Name">
-        <input type="number" placeholder="Quantity">
-        <input type="number" placeholder="Price">
-        <input type="text" placeholder="Category">
-        <input type="date" placeholder="Date">
-        <button>Add</button>
-    </form>
 {% endblock %}
