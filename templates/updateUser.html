@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title>Update Password</title>
+{% endblock %}
+
+{% block body %}
+    <h1>Update Password</h1>
+    <form action="{{ url_for('update_password', id=user.id) }}" method="POST">
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="cPassword" placeholder="Current Password" required>
+        <input type="password" name="nPassword" placeholder="New Password" required>
+        <button type="submit">Update Password</button>
+    </form>
+{% endblock %}

@@ -6,7 +6,8 @@ from datetime import datetime
 
 
 
-app = Flask(__name__)
+# app = Flask(__name__)
+app = Flask(__name__, static_folder="static", static_url_path="/static")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///shoppingManagement.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "my_secret_key"
@@ -68,11 +69,50 @@ def register():
 
     return render_template("register.html")
 
+@app.route("/update_password/<int:id>", methods=["GET", "POST"])
+def update_password(id):
+    error_message = None
+    success_message = None
+    
+    if "user_id" not in session or session["user_id"] != id:
+        error_message = "You must be logged in to add a purchase!"
+        return redirect(url_for("login"))
+    
+    user = User.query.get(id)
+
+    if not user:
+        error_message = "User not found!"
+        return redirect(url_for("purchases"))
+
+    if request.method == "POST":
+        email = request.form["email"]
+        current_password = request.form["cPassword"]
+        new_password = request.form["nPassword"]
+
+        if user.email != email:
+            error_message = "Email does not match!"
+            return redirect(url_for("update_password", id=id))
+    
+        if user.password != current_password:
+            error_message = "Incorrect current password!"
+            return redirect(url_for("update_password", id=id))
+        
+        user.password = new_password
+        db.session.commit()
+        success_message = "Purchase updated successfully!"
+        return redirect(url_for("index"))
+    
+    else:
+        error_message = "The password is incorrect.Try again"
+        return redirect(url_for("update_password", id=id))
+
 @app.route("/logout")
 def logout():
     session.clear()
     flash("You have been logged out!", "info")
     return redirect(url_for("index"))
+
+
 
 @app.route("/purchases", methods=["GET"])
 def purchases():

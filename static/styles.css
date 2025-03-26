@@ -1,0 +1,79 @@
+/* Navigation bar styling */
+nav {
+    background-color: #333;
+    padding: 10px;
+}
+
+/* Flex container for the nav items */
+nav ul {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    align-items: center;
+}
+
+/* Styling for each nav item */
+nav ul li {
+    margin: 0 15px;
+}
+
+/* Links inside the nav */
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    font-size: 16px;
+}
+
+/* Account dropdown container */
+.dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Account button styling */
+.dropbtn {
+    background-color: transparent;
+    color: white;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+/* Dropdown content hidden by default */
+.dropdown-content {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    background-color: #444;
+    min-width: 150px;
+    top: 100%;
+    left: 0;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+/* Dropdown links */
+.dropdown-content a {
+    color: white;
+    padding: 10px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+/* Show dropdown on hover */
+.dropdown:hover .dropdown-content {
+    display: flex;
+}
+
+/* Hover effect for dropdown links */
+.dropdown-content a:hover {
+    background-color: #555;
+}
