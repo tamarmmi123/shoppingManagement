@@ -1,9 +1,9 @@
-from flask import Flask, request, render_template, redirect, url_for, session, flash
+from flask import Flask, request, send_file, render_template, redirect, url_for, session, flash
 from models import db
 from models.User import User
 from models.Purchase import Purchase
 from datetime import datetime, timedelta
-
+import pandas as pd
 
 
 app = Flask(__name__)
@@ -244,6 +244,21 @@ def filter_purchases():
 
     return render_template("purchases.html", purchases=filtered_purchases)
 
+
+
+@app.route('/saveData')
+def save_data():
+    purchases = Purchase.query.all()
+    data = [
+        {"Product Name": p.prodName, "Quantity": p.qty, "Price": p.price, "Category": p.category, "Date": p.date}
+        for p in purchases
+    ]
+    
+    df = pd.DataFrame(data)
+    file_path = "saveData.csv"
+    df.to_csv(file_path, index=False, encoding='utf-8-sig')
+
+    return send_file(file_path, as_attachment=True)
 
 
 if __name__ == "__main__":
