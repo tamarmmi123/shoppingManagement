@@ -6,30 +6,35 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
     </head>    
     <body>
-        <nav>
-            <ul>
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                {% if 'user_id' in session %}
-                <li>
-                    <a href="{{ url_for('add_purchase') }}">My Purchases</a>
-                </li>
-                <li class="dropdown">
-                    <a href="#" class="dropbtn">Account ▾</a>
-                    <div class="dropdown-content">
-                        <a href="{{ url_for('update_password', id=session['user_id']) }}">Change Password</a>
-                        <a href="{{ url_for('logout') }}" onclick="return confirm('Are you sure you want to log out?')">Logout</a>
-                    </div>
-                </li>
-                {% else %}
-                <li>
-                    <a href="{{ url_for('login') }}">Login</a>
-                </li>
-                <li>
-                    <a href="{{ url_for('register') }}">Register</a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>             
+        <div class="container">
+            <div>
+                <img src="{{ url_for('static', filename='images/spendSmart.png') }}" alt="Spend Smart Logo">
+            </div>
+            <div>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    {% if 'user_id' in session %}
+                    <li>
+                        <a href="{{ url_for('purchases') }}">My Purchases</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Account ▾</a>
+                        <div class="dropdown-content">
+                            <a href="{{ url_for('update_password', id=session['user_id']) }}">Change Password</a>
+                            <a href="{{ url_for('logout') }}" onclick="return confirm('Are you sure you want to log out?')">Logout</a>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="{{ url_for('login') }}">Login</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('register') }}">Register</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>             
+        </div>             
         {% block body %}
         {% endblock %}
     </body>

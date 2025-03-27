@@ -1,65 +1,63 @@
-/* Navigation bar styling */
-nav {
-    background-color: #333;
-    padding: 10px;
+/*-------- base ----------*/
+.container{
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: #e2dfd2;
+ }
+
+ .container div:first-child {
+    text-align: center;
 }
 
-/* Flex container for the nav items */
-nav ul {
+div ul {
     display: flex;
+    justify-content: space-evenly;
     list-style: none;
-    padding: 0;
-    margin: 0;
     align-items: center;
 }
 
-/* Styling for each nav item */
-nav ul li {
-    margin: 0 15px;
-}
-
-/* Links inside the nav */
-nav ul li a {
+div ul li a, .dropbtn {
     color: white;
     text-decoration: none;
-    padding: 10px;
-    font-size: 16px;
+    border-radius: 17px;
+    font-size: 30px;
+    background-color: rgb(255, 122, 4);
+    padding: 15px 25px;
+    display: inline-block;
+    width: 200px;
+    text-align: center;
 }
 
-/* Account dropdown container */
+
 .dropdown {
     position: relative;
-    display: flex;
-    align-items: center;
+    display: inline-block;
 }
 
-/* Account button styling */
 .dropbtn {
-    background-color: transparent;
     color: white;
-    padding: 10px;
-    font-size: 16px;
-    border: none;
-    cursor: pointer;
     text-decoration: none;
-    display: flex;
-    align-items: center;
+    font-size: 30px;
+    background-color: rgb(255, 122, 4);
+    padding: 15px 25px;
+    border-radius: 17px;
+    display: inline-block;
+    width: 100%;
+    text-align: center;
 }
 
-/* Dropdown content hidden by default */
 .dropdown-content {
     display: none;
-    flex-direction: column;
     position: absolute;
-    background-color: #444;
-    min-width: 150px;
+    background-color: rgb(255, 122, 4);
+    min-width: 100%;
+    border-radius: 10px;
     top: 100%;
     left: 0;
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 1;
 }
 
-/* Dropdown links */
 .dropdown-content a {
     color: white;
     padding: 10px;
@@ -68,12 +66,194 @@ nav ul li a {
     text-align: left;
 }
 
-/* Show dropdown on hover */
 .dropdown:hover .dropdown-content {
-    display: flex;
+    display: block;
 }
 
-/* Hover effect for dropdown links */
 .dropdown-content a:hover {
-    background-color: #555;
+    background-color: rgb(230, 100, 0);
+}
+
+
+
+.welcome-container {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.welcome-container h1 {
+    font-size: 36px;
+    color: rgb(3, 36, 64);
+}
+
+
+/* -------- form ------- */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e2dfd2;
+    margin: 0;
+    padding: 0;
+}
+
+.purchases-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.purchases-header form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.table-container, .form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+}
+
+table {
+    margin: 20px auto;
+    width: 80%;
+    max-width: 800px;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: rgb(255, 122, 4);
+    color: rgb(3, 36, 64);
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+button, a {
+    text-decoration: none;
+    border-radius: 17px;
+    font-size: 20px;
+    background-color: rgb(255, 122, 4);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+button:hover, a:hover {
+    background-color: rgb(230, 100, 0);
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+    width: 100%;
+    align-items: center;
+}
+
+input, select {
+    padding: 10px;
+    border: 2px solid rgb(255, 122, 4);
+    border-radius: 5px;
+    width: 100%;
+    max-width: 300px;
+}
+
+h3 {
+    margin-top: 30px;
+}
+
+form button {
+    align-self: center;
+    width: fit-content;
+}
+
+.action-buttons {
+    display: flex;
+    background: none; 
+}
+
+.action-buttons a {
+    text-decoration: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    display: inline-block; 
+}
+
+.update-btn {
+    background-color: #4CAF50;
+    margin: 5px;
+}
+
+.update-btn:hover {
+    background-color: #45a049;
+}
+
+.delete-btn {
+    background-color: #f44336;
+    margin: 5px;
+}
+
+.delete-btn:hover {
+    background-color: #d32f2f;
+}
+
+
+/* -------log in and register--------- */
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh; /* Instead of 100vh */
+    margin-top: 30px; /* Add some spacing from the top */
+}
+
+.auth-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.auth-container form {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.auth-container p {
+    text-align: center;
+}
+
+.auth-container a {
+    color: rgb(255, 122, 4);
+    font-size: 16px;
+    text-decoration: none;
+    background: none;
+}
+
+.auth-container a:hover {
+    text-decoration: underline;
 }

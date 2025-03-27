@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Purchases</h2>
+
+<form method="GET" action="{{ url_for('filter_purchases') }}">
+    <label for="filter">Filter Purchases by:</label>
+    <select name="filter" id="filter">
+        <option value="none" {% if request.args.get('filter') == 'none' %}selected{% endif %}>Show All</option>
+        <option value="last_week" {% if request.args.get('filter') == 'last_week' %}selected{% endif %}>Last Week</option>
+        <option value="last_year" {% if request.args.get('filter') == 'last_year' %}selected{% endif %}>Last Year</option>
+        <option value="custom_range" {% if request.args.get('filter') == 'custom_range' %}selected{% endif %}>Custom Date Range</option>
+    </select>
+
+    <!-- Custom Date Range Fields -->
+    <div>
+        <label for="start_date">Start Date:</label>
+        <input type="date" name="start_date" id="start_date" value="{{ request.args.get('start_date') }}">
+
+        <label for="end_date">End Date:</label>
+        <input type="date" name="end_date" id="end_date" value="{{ request.args.get('end_date') }}">
+    </div>
+
+    <button type="submit">Filter</button>
+</form>
+
+<h3>Filtered Purchases</h3>
+<ul>
+    {% for purchase in purchases %}
+        <li>{{ purchase['date'] }} - {{ purchase['item'] }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -2,12 +2,11 @@ from flask import Flask, request, render_template, redirect, url_for, session, f
 from models import db
 from models.User import User
 from models.Purchase import Purchase
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 
-# app = Flask(__name__)
-app = Flask(__name__, static_folder="static", static_url_path="/static")
+app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///shoppingManagement.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "my_secret_key"
@@ -128,6 +127,10 @@ def purchases():
 
     user_purchases = Purchase.query.filter_by(user_id=user.id).all()
 
+    for p in user_purchases:
+        print(f"Purchase: {p.prodName}, {p.qty}, {p.price}, {p.category}, {p.date}")
+
+
     return render_template("purchases.html", user=user, purchases=user_purchases)
 
 @app.route("/add_purchase", methods=["GET", "POST"])
@@ -210,6 +213,37 @@ def delete_purchase(id):
     db.session.delete(purchase)
     db.session.commit()
     return redirect(url_for("purchases"))
+
+@app.route("/filter_purchases", methods=["GET"])
+def filter_purchases():
+    if "user_id" not in session:
+        flash("You must be logged in to filter purchases!", "danger")
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    filter_option = request.args.get("filter", "none")  # Default to "none"
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+
+    query = Purchase.query.filter_by(user_id=user_id)
+
+    if filter_option == "last_week":
+        one_week_ago = datetime.now() - timedelta(weeks=1)
+        query = query.filter(Purchase.date >= one_week_ago)
+
+    elif filter_option == "last_year":
+        one_year_ago = datetime.now() - timedelta(days=365)
+        query = query.filter(Purchase.date >= one_year_ago)
+
+    elif filter_option == "custom_range" and start_date and end_date:
+        start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+        end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+        query = query.filter(Purchase.date.between(start_date_obj, end_date_obj))
+
+    filtered_purchases = query.all()
+
+    return render_template("purchases.html", purchases=filtered_purchases)
+
 
 
 if __name__ == "__main__":
