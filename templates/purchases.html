@@ -6,6 +6,8 @@
 
 {% block body %}
 
+
+
 <div class="purchases-header">
     <h2>Here are your purchases:</h2>
 
@@ -61,6 +63,26 @@
         {% endfor %}
     </table>
 </div>
+{% endif %}
+
+<div class="container">
+    <h3>Graphs:</h3>
+    <form action="{{ url_for('weekly_expenses') }}" method="get">
+        <button type="submit">Generate Weekly Spending Graph</button>
+    </form>
+    <form action="{{ url_for('category_expenses') }}" method="get">
+        <button type="submit">Generate Category Spending Graph</button>
+    </form>
+</div>
+
+
+{% if graph %}
+    <br>
+    <img src="{{ graph }}" style="max-width: 100%; height: auto; margin-top: 20px;">
+{% else %}
+    {% if purchases|length == 0 %}
+        <p>No purchases to generate a chart from.</p>
+    {% endif %}
 {% endif %}
 
 <div class="form-container">

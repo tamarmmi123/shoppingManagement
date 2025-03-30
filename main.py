@@ -1,15 +1,22 @@
-from flask import Flask, request, send_file, render_template, redirect, url_for, session, flash
+from flask import Flask, request, send_file, render_template, redirect, url_for, session, flash, Response
 from models import db
 from models.User import User
 from models.Purchase import Purchase
 from datetime import datetime, timedelta
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import io
 
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///shoppingManagement.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "my_secret_key"
+
+
+DATABASE = "shoppingManagement.db"
 
 db.init_app(app)
 
@@ -130,7 +137,6 @@ def purchases():
     for p in user_purchases:
         print(f"Purchase: {p.prodName}, {p.qty}, {p.price}, {p.category}, {p.date}")
 
-
     return render_template("purchases.html", user=user, purchases=user_purchases)
 
 @app.route("/add_purchase", methods=["GET", "POST"])
@@ -221,7 +227,7 @@ def filter_purchases():
         return redirect(url_for("login"))
 
     user_id = session["user_id"]
-    filter_option = request.args.get("filter", "none")  # Default to "none"
+    filter_option = request.args.get("filter", "none")
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
 
@@ -250,7 +256,7 @@ def filter_purchases():
 def save_data():
     purchases = Purchase.query.all()
     data = [
-        {"Product Name": p.prodName, "Quantity": p.qty, "Price": p.price, "Category": p.category, "Date": p.date}
+        {"Product Name": p.prodName, "Quantity": p.qty, "Price": p.price, "category": p.category, "date": p.date}
         for p in purchases
     ]
     
@@ -259,6 +265,109 @@ def save_data():
     df.to_csv(file_path, index=False, encoding='utf-8-sig')
 
     return send_file(file_path, as_attachment=True)
+
+
+def generate_empty_plot():
+    """Creates an empty plot if no data is available."""
+    fig, ax = plt.subplots()
+    ax.text(0.5, 0.5, "No Data Available", fontsize=12, ha='center', va='center')
+    ax.set_axis_off()
+
+    output = io.BytesIO()
+    plt.savefig(output, format='png')
+    plt.close(fig)
+    output.seek(0)
+    return Response(output.getvalue(), mimetype='image/png')
+
+def get_purchases(user_id):
+    purchases = Purchase.query.filter_by(user_id=user_id).all()
+    return purchases
+
+@app.route('/weekly-expenses')
+def weekly_expenses():
+    if "user_id" not in session:
+        return "Unauthorized", 403
+
+    user_id = session["user_id"]
+    purchases = get_purchases(user_id)  
+    
+    data = [{
+        'category': p.category,
+        'qty': p.qty,
+        'price': p.price,
+        'date': p.date,
+        'cost': p.qty * p.price
+    } for p in purchases]
+    
+    df = pd.DataFrame(data)
+
+    if df.empty:
+        return generate_empty_plot()
+
+    df['date'] = pd.to_datetime(df['date'])
+
+    df['Week Start'] = df['date'].dt.to_period('W').apply(lambda r: r.start_time)
+    df['Week End'] = df['date'].dt.to_period('W').apply(lambda r: r.end_time)
+
+    df['Week Range'] = df.apply(lambda row: f"{row['Week Start'].strftime('%b %d')} - {row['Week End'].strftime('%b %d')}", axis=1)
+
+    weekly_expenses = df.groupby('Week Range')['cost'].sum()
+
+    fig, ax = plt.subplots(figsize=(14, 6))
+    weekly_expenses.plot(kind='bar', title="Weekly Expenses", ax=ax, width=0.8)
+
+    ax.set_ylabel('Total Cost')
+    ax.set_xlabel('Week')
+    ax.set_xticklabels(weekly_expenses.index, rotation=0, ha='center') 
+
+    ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+    output = io.BytesIO()
+    plt.savefig(output, format='png', bbox_inches='tight') 
+    plt.close(fig)
+    output.seek(0)
+    return Response(output.getvalue(), mimetype='image/png')
+
+@app.route('/category-expenses')
+def category_expenses():
+    """Generate a pie chart of expenses by category with a legend."""
+    if "user_id" not in session:
+        return "Unauthorized", 403
+
+    user_id = session["user_id"]
+    purchases = get_purchases(user_id)  
+    
+    data = [{
+        'category': p.category,
+        'qty': p.qty,
+        'price': p.price,
+        'date': p.date,
+        'cost': p.qty * p.price
+    } for p in purchases]
+
+    df = pd.DataFrame(data)
+
+    if df.empty:
+        return generate_empty_plot()
+
+    category_expenses = df.groupby('category')['cost'].sum()
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    wedges, texts, autotexts = ax.pie(
+        category_expenses, labels=None, autopct='%1.1f%%', startangle=140
+    )
+
+    ax.legend(wedges, category_expenses.index, title="Categories", loc="center left", bbox_to_anchor=(1, 0.5))
+
+    ax.set_title("Category Expenses")
+
+    output = io.BytesIO()
+    plt.savefig(output, format='png', bbox_inches='tight')
+    plt.close(fig)
+    output.seek(0)
+    return Response(output.getvalue(), mimetype='image/png')
+
+
 
 
 if __name__ == "__main__":
