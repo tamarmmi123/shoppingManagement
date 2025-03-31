@@ -8,6 +8,18 @@
 
 
 
+<div class="graphContainer">
+    <form action="{{ url_for('save_data') }}" method="get">
+        <button type="submit" class="grpgh-btn">Backup Data</button>
+    </form>
+    <form action="{{ url_for('weekly_expenses') }}" method="get">
+        <button type="submit" class="grpgh-btn">Generate Weekly Spending Graph</button>
+    </form>
+    <form action="{{ url_for('category_expenses') }}" method="get">
+        <button type="submit" class="grpgh-btn">Generate Category Spending Graph</button>
+    </form>
+</div>
+
 <div class="purchases-header">
     <h2>Here are your purchases:</h2>
 
@@ -33,9 +45,8 @@
 
 </div>
 
-<form action="{{ url_for('save_data') }}" method="get">
-    <button type="submit">Backup Data</button>
-</form>
+
+
 <div class="table-container">
     {% if purchases|length == 0 %}
     <h4>You have no purchases yet.</h4>
@@ -69,14 +80,7 @@
 </div>
 {% endif %}
 
-<div class="graphContainer">
-    <form action="{{ url_for('weekly_expenses') }}" method="get">
-        <button type="submit">Generate Weekly Spending Graph</button>
-    </form>
-    <form action="{{ url_for('category_expenses') }}" method="get">
-        <button type="submit">Generate Category Spending Graph</button>
-    </form>
-</div>
+
 
 
 {% if graph %}

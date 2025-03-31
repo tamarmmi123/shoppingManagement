@@ -8,6 +8,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
+import os
+import numpy as np
+
 
 
 app = Flask(__name__, template_folder="templates")
@@ -136,7 +139,7 @@ def purchases():
 
     user_purchases = Purchase.query.filter_by(user_id=user.id).all()
 
-    categories = ["Food", "Transport", "Clothing", "Entertainment", "Other"]  # Ensure this list is included
+    categories = ["Food", "Transport", "Clothing", "Entertainment", "Other"]
 
     return render_template("purchases.html", user=user, purchases=user_purchases, categories=categories)
 
@@ -146,7 +149,7 @@ from datetime import datetime
 @app.route('/add_purchase', methods=['POST'])
 def add_purchase():
     if "user_id" not in session:
-        return "Unauthorized", 403
+        return redirect(url_for('register')) 
 
     categories = ["Food", "Transport", "Clothing", "Entertainment"]
     
@@ -171,11 +174,12 @@ def add_purchase():
     db.session.commit()
 
     return redirect(url_for('purchases'))
-
-
-
+    
 @app.route('/update_purchase/<int:id>', methods=['GET', 'POST'])
 def update_purchase(id):
+    if "user_id" not in session:
+        return redirect(url_for('register')) 
+
     categories = ["Food", "Transport", "Clothing", "Entertainment"]
     purchase = Purchase.query.get_or_404(id)
 
@@ -192,9 +196,12 @@ def update_purchase(id):
         purchase.date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
 
         db.session.commit()
-        return redirect(url_for('purchases'))
+        return redirect(url_for('purchases', user_id=session["user_id"]))  
 
-    return render_template('updatePurchase.html', purchase=purchase, categories=categories)
+    return render_template('updatePurchase.html', 
+                           purchase=purchase, 
+                           categories=categories, 
+                           formatted_date=purchase.date.strftime('%Y-%m-%d'))
 
 
 @app.route("/delete_purchase/<int:id>", methods=["GET", "DELETE"])
@@ -361,6 +368,57 @@ def category_expenses():
     output.seek(0)
     return Response(output.getvalue(), mimetype='image/png')
 
+@app.route("/demoProfile", methods=["GET", "POST"])
+def demo_profile():
+    product_names = ["Laptop", "Phone", "Headphones", "Monitor", "Keyboard"]
+    categories = ["Electronics", "Electronics", "Accessories", "Electronics", "Accessories"]
+    
+    num_purchases = 10
+    data = {
+        "id": np.arange(1, num_purchases + 1),
+        "product_name": np.random.choice(product_names, num_purchases),
+        "price": np.round(np.random.uniform(20, 1000, num_purchases), 2),
+        "quantity": np.random.randint(1, 5, num_purchases),
+        "category": np.random.choice(categories, num_purchases),
+        "date": pd.date_range(end=pd.Timestamp.today(), periods=num_purchases).strftime('%Y-%m-%d')
+    }
+
+    df = pd.DataFrame(data)
+
+    df["date"] = pd.to_datetime(df["date"])
+    df['Week Start'] = df['date'].dt.to_period('W').apply(lambda r: r.start_time)
+    df['Week End'] = df['date'].dt.to_period('W').apply(lambda r: r.end_time)
+    df['Week Range'] = df.apply(lambda row: f"{row['Week Start'].strftime('%b %d')} - {row['Week End'].strftime('%b %d')}", axis=1)
+    weekly_expenses = df.groupby('Week Range')['price'].sum()
+
+    weekly_graph_path = os.path.join("static", "weekly_graph.png")
+    fig, ax = plt.subplots(figsize=(10, 6))
+    weekly_expenses.plot(kind='bar', ax=ax, color='orange')
+    ax.set_xlabel("Week Range")
+    ax.set_ylabel("Total Spent (₪)")
+    ax.set_title("Weekly Spending")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.savefig(weekly_graph_path)
+    plt.close()
+
+    category_totals = df.groupby("category")["price"].sum()
+
+    category_graph_path = os.path.join("static", "category_graph.png")
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.pie(category_totals, labels=category_totals.index, autopct='%1.1f%%', startangle=140)
+    ax.set_title("Spending by Category")
+    plt.tight_layout()
+    plt.savefig(category_graph_path)
+    plt.close()
+
+    chart = request.form.get('chart', 'purchases') 
+
+    return render_template("demo_profile.html", 
+                           chart=chart, 
+                           purchases=df.to_dict(orient="records"), 
+                           weekly_graph_path=weekly_graph_path, 
+                           category_graph_path=category_graph_path)
 
 
 

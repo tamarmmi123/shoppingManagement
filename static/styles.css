@@ -228,9 +228,9 @@ form button {
 
 .graphContainer {
     display: flex;
-    justify-content: center; /* Centers horizontally */
-    align-items: center; /* Centers vertically */
-    gap: 5px; /* Reduce spacing between buttons */
+    justify-content: center;
+    align-items: center; 
+    gap: 5px;
     margin-bottom: 5vh;
 }
 
@@ -272,3 +272,50 @@ form button {
     text-decoration: underline;
 }
 
+
+
+.demo-button-container {
+    display: flex; 
+    justify-content: center; 
+    gap: 0; 
+}
+
+.demo-btn, .grpgh-btn {
+    width: 100%;
+    max-width: 300px;
+    background-color: rgb(252, 251, 242);
+    color: rgb(6, 37, 65);
+    border: 2px solid rgb(6, 37, 65);
+    padding: 10px;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.demo-btn:hover, .grpgh-btn:hover {
+    background-color: rgb(6, 37, 65); 
+    color: white; 
+}
+
+.demo-btn.active, .grpgh-btn.active{
+    background-color: rgb(6, 37, 65); 
+    color: white; 
+}
+
+.demo-btn.active:hover, .grpgh-btn.active:hover {
+    background-color: rgb(6, 37, 65);
+    color: white; 
+}
+
+.demo-graph-container {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    margin-top: 20px; 
+}
+
+.demo-graph-container img {
+    max-width: 90%; 
+    height: auto; 
+}
