@@ -5,13 +5,21 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Update Purchase</h1>
-    <form action="{{ url_for('update_purchase', id=purchase.id) }}" method="POST">
-        <input type="text" name="prodName" placeholder="Product Name" required value="{{ purchase.prodName }}">
-        <input type="number" name="qty" placeholder="Quantity" required value="{{purchase.qty}}">
-        <input type="number" step="0.01" name="price" placeholder="Price" required value="{{purchase.price}}">
-        <input type="text" name="category" placeholder="Category" required value="{{purchase.category}}">
-        <input type="date" name="date" value="{{purchase.date}}" required>
-        <button type="submit">Update Purchase</button>
-    </form>
+<h1>Update Purchase</h1>
+<form action="{{ url_for('update_purchase', id=purchase.id) }}" method="POST">
+    <input type="text" name="prodName" placeholder="Product Name" required value="{{ purchase.prodName }}">
+    <input type="number" name="qty" placeholder="Quantity" required value="{{ purchase.qty }}">
+    <input type="number" step="0.01" name="price" placeholder="Price" required value="{{ purchase.price }}">
+
+    <label for="category">Category:</label>
+    <select name="category" required>
+        {% for category in categories %}
+            <option value="{{ category }}" {% if purchase.category == category %}selected{% endif %}>{{ category }}</option>
+        {% endfor %}
+        <option value="Other" {% if purchase.category == 'Other' %}selected{% endif %}>Other</option>
+    </select>
+    
+    <input type="date" name="date" value="{{ purchase.date }}" required>
+    <button type="submit">Update Purchase</button>
+</form>
 {% endblock %}

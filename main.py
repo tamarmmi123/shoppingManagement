@@ -10,13 +10,15 @@ import matplotlib.pyplot as plt
 import io
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///shoppingManagement.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = "my_secret_key"
 
 
 DATABASE = "shoppingManagement.db"
+
+CATEGORIES = ["Food", "Transport", "Clothing", "Entertainment"]
 
 db.init_app(app)
 
@@ -134,74 +136,66 @@ def purchases():
 
     user_purchases = Purchase.query.filter_by(user_id=user.id).all()
 
-    for p in user_purchases:
-        print(f"Purchase: {p.prodName}, {p.qty}, {p.price}, {p.category}, {p.date}")
+    categories = ["Food", "Transport", "Clothing", "Entertainment", "Other"]  # Ensure this list is included
 
-    return render_template("purchases.html", user=user, purchases=user_purchases)
+    return render_template("purchases.html", user=user, purchases=user_purchases, categories=categories)
 
-@app.route("/add_purchase", methods=["GET", "POST"])
+
+from datetime import datetime
+
+@app.route('/add_purchase', methods=['POST'])
 def add_purchase():
-    error_message = None
-    seccess_message = None
     if "user_id" not in session:
-        error_message = "You must be logged in to add a purchase!"
-        return redirect(url_for("login"))
-        
-    user_id = session["user_id"]
-    prod_name = request.form.get("prodName")
-    qty = request.form.get("qty")
-    price = request.form.get("price")
-    category = request.form.get("category")
-    date_purchased = request.form.get("date")
-    
-    if not prod_name or not qty or not price or not category:
-        error_message = "All fields are required!", "danger"
-        return redirect(url_for("add_purchase"))
+        return "Unauthorized", 403
 
-    date_obj = datetime.strptime(date_purchased, "%Y-%m-%d")
+    categories = ["Food", "Transport", "Clothing", "Entertainment"]
+    
+    category = request.form['category']
+    
+    if category == "Other" and request.form.get('custom_category'):
+        category = request.form['custom_category'].strip()
+
+    date_str = request.form['date'] 
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
 
     new_purchase = Purchase(
-        prodName=prod_name,
-        qty=int(qty),
-        price=float(price),
+        prodName=request.form['prodName'],
+        qty=int(request.form['qty']),
+        price=float(request.form['price']),
         category=category,
         date=date_obj,
-        user_id=user_id
+        user_id=session["user_id"]
     )
 
     db.session.add(new_purchase)
     db.session.commit()
 
-    
-    seccess_message ="Purchase added successfully!"
-    return redirect(url_for("purchases"))
+    return redirect(url_for('purchases'))
 
-@app.route("/update_purchase/<int:id>", methods=["GET", "POST"])
+
+
+@app.route('/update_purchase/<int:id>', methods=['GET', 'POST'])
 def update_purchase(id):
-    error_message = None
-    success_message = None
-    if "user_id" not in session:
-        error_message = "You must be logged in to add a purchase!"
-        return redirect(url_for("login"))
-    
-    purchase = Purchase.query.get(id)
+    categories = ["Food", "Transport", "Clothing", "Entertainment"]
+    purchase = Purchase.query.get_or_404(id)
 
-    if not purchase:
-        error_message = "Purchase not found!"
-        return redirect(url_for("purchases"))
+    if request.method == "POST":
+        category = request.form['category']
+        
+        if category == "Other" and request.form.get('custom_category'):
+            category = request.form['custom_category'].strip()
 
-    if request.method == "GET":
-        return render_template("updatePurchase.html", purchase=purchase)
+        purchase.prodName = request.form['prodName']
+        purchase.qty = int(request.form['qty'])
+        purchase.price = float(request.form['price'])
+        purchase.category = category
+        purchase.date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
 
-    purchase.prodName = request.form["prodName"]
-    purchase.qty = int(request.form["qty"])
-    purchase.price = float(request.form["price"])
-    purchase.category = request.form["category"]
-    purchase.date = datetime.strptime(request.form["date"], "%Y-%m-%d")
+        db.session.commit()
+        return redirect(url_for('purchases'))
 
-    db.session.commit()
-    success_message = "Purchase updated successfully!"
-    return redirect(url_for("purchases"))
+    return render_template('updatePurchase.html', purchase=purchase, categories=categories)
+
 
 @app.route("/delete_purchase/<int:id>", methods=["GET", "DELETE"])
 def delete_purchase(id):

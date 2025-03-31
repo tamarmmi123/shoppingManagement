@@ -1,4 +1,7 @@
 /*-------- base ----------*/
+*{
+    color: rgb(4, 38, 76);
+}
 .container{
     padding-left: 20px;
     padding-right: 20px;
@@ -73,7 +76,6 @@ div ul li a, .dropbtn {
 .dropdown-content a:hover {
     background-color: rgb(230, 100, 0);
 }
-
 
 
 .welcome-container {
@@ -168,7 +170,9 @@ form {
     max-width: 400px;
     width: 100%;
     align-items: center;
+    margin: 0 auto;
 }
+
 
 input, select {
     padding: 10px;
@@ -176,6 +180,8 @@ input, select {
     border-radius: 5px;
     width: 100%;
     max-width: 300px;
+    box-sizing: border-box;
+    appearance: none; 
 }
 
 h3 {
@@ -220,6 +226,14 @@ form button {
     background-color: #d32f2f;
 }
 
+.graphContainer {
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically */
+    gap: 5px; /* Reduce spacing between buttons */
+    margin-bottom: 5vh;
+}
+
 
 /* -------log in and register--------- */
 .auth-container {
@@ -227,8 +241,8 @@ form button {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 80vh; /* Instead of 100vh */
-    margin-top: 30px; /* Add some spacing from the top */
+    min-height: 80vh;
+    margin-top: 30px;
 }
 
 .auth-container h2 {

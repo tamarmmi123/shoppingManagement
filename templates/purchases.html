@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
-    <title>Your Purchases</title>
+<title>Your Purchases</title>
 {% endblock %}
 
 {% block body %}
@@ -13,12 +13,15 @@
 
     <form method="GET" action="{{ url_for('filter_purchases') }}">
         <select name="filter" onchange="this.form.submit()">
-            <option value="none" {% if request.args.get('filter') == 'none' %}selected{% endif %}>All</option>
-            <option value="last_week" {% if request.args.get('filter') == 'last_week' %}selected{% endif %}>Last Week</option>
-            <option value="last_year" {% if request.args.get('filter') == 'last_year' %}selected{% endif %}>Last Year</option>
-            <option value="custom_range" {% if request.args.get('filter') == 'custom_range' %}selected{% endif %}>Custom Range</option>
+            <option value="none" {% if request.args.get('filter')=='none' %}selected{% endif %}>All</option>
+            <option value="last_week" {% if request.args.get('filter')=='last_week' %}selected{% endif %}>Last Week
+            </option>
+            <option value="last_year" {% if request.args.get('filter')=='last_year' %}selected{% endif %}>Last Year
+            </option>
+            <option value="custom_range" {% if request.args.get('filter')=='custom_range' %}selected{% endif %}>Custom
+                Range</option>
         </select>
-        
+
         {% if request.args.get('filter') == 'custom_range' %}
         <label for="start_date">Start Date:</label>
         <input type="date" name="start_date" value="{{ request.args.get('start_date', '') }}">
@@ -34,9 +37,9 @@
     <button type="submit">Backup Data</button>
 </form>
 <div class="table-container">
-{% if purchases|length == 0 %}
+    {% if purchases|length == 0 %}
     <h4>You have no purchases yet.</h4>
-{% else %}
+    {% else %}
     <table>
         <tr>
             <th>Product Name</th>
@@ -55,18 +58,18 @@
             <td>
                 <div class="action-buttons">
                     <a href="/update_purchase/{{ purchase.id }}" class="update-btn">Update</a>
-                    <a href="/delete_purchase/{{ purchase.id }}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this purchase?')">Delete</a>
+                    <a href="/delete_purchase/{{ purchase.id }}" class="delete-btn"
+                        onclick="return confirm('Are you sure you want to delete this purchase?')">Delete</a>
                 </div>
-            </td>                       
+            </td>
         </tr>
-        
+
         {% endfor %}
     </table>
 </div>
 {% endif %}
 
-<div class="container">
-    <h3>Graphs:</h3>
+<div class="graphContainer">
     <form action="{{ url_for('weekly_expenses') }}" method="get">
         <button type="submit">Generate Weekly Spending Graph</button>
     </form>
@@ -77,23 +80,27 @@
 
 
 {% if graph %}
-    <br>
-    <img src="{{ graph }}" style="max-width: 100%; height: auto; margin-top: 20px;">
+<br>
+<img src="{{ graph }}" style="max-width: 100%; height: auto; margin-top: 20px;">
 {% else %}
-    {% if purchases|length == 0 %}
-        <p>No purchases to generate a chart from.</p>
-    {% endif %}
+{% if purchases|length == 0 %}
+<p>No purchases to generate a chart from.</p>
+{% endif %}
 {% endif %}
 
-<div class="form-container">
-    <h3>Add a New Purchase</h3>
-    <form action="{{ url_for('add_purchase') }}" method="post">
-        <input type="text" name="prodName" placeholder="Product Name" required>
-        <input type="number" name="qty" placeholder="Quantity" required>
-        <input type="number" step="0.01" name="price" placeholder="Price" required>
-        <input type="text" name="category" placeholder="Category" required>
-        <input type="date" name="date" required>
-        <button type="submit">Add Purchase</button>
-    </form>
-</div>
+<form action="{{ url_for('add_purchase') }}" method="post">
+    <input type="text" name="prodName" placeholder="Product Name" required>
+    <input type="number" name="qty" placeholder="Quantity" required>
+    <input type="number" step="0.01" name="price" placeholder="Price" required>
+
+    <label for="category">Category:</label>
+    <select name="category" required>
+        {% for category in categories %}
+            <option value="{{ category }}">{{ category }}</option>
+        {% endfor %}
+    </select>    
+    <input type="date" name="date" required>
+    <button type="submit">Add Purchase</button>
+</form>
+
 {% endblock %}
