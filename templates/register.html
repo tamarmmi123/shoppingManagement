@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block body %}
+<div id="form-section">
     <div class="auth-container">
         <h2>Register</h2>
 
@@ -17,8 +18,9 @@
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Register</button>
             <p>Already have an account?
-                <a href="{{ url_for('login') }}">Log in</a>
+                <a href="{{ url_for('login') }}#form-section">Log in</a>
             </p>
         </form>
     </div>
+</div>
 {% endblock %}

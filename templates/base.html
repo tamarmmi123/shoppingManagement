@@ -26,15 +26,9 @@
                         </div>
                     </li>
                     {% else %}
-                    <li>
-                        <a href="{{ url_for('login') }}">Login</a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('register') }}">Register</a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('demo_profile') }}">Try Demo</a>
-                    </li>
+                    <li><a href="{{ url_for('login') }}#form-section">Login</a></li>
+                    <li><a href="{{ url_for('register') }}#form-section">Register</a></li>
+                    <li><a href="{{ url_for('demo_profile') }}#form-section">Try Demo</a></li>
                     {% endif %}
                 </ul>
             </div>             

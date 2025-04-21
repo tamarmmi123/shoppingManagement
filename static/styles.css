@@ -239,7 +239,6 @@ form button {
 .auth-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     min-height: 80vh;
     margin-top: 30px;

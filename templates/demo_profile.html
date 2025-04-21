@@ -5,64 +5,74 @@
 {% endblock %}
 
 {% block body %}
-<div class="demo-button-container">
-    <form method="POST" action="{{ url_for('demo_profile') }}">
-        <button type="submit" name="chart" value="purchases" class="demo-btn {% if chart == 'purchases' %}active{% endif %}">View Purchases</button>
-    </form>
-    <form method="POST" action="{{ url_for('demo_profile') }}">
-        <button type="submit" name="chart" value="weekly" class="demo-btn {% if chart == 'weekly' %}active{% endif %}">View Weekly Expenses</button>
-    </form>
-    <form method="POST" action="{{ url_for('demo_profile') }}">
-        <button type="submit" name="chart" value="category" class="demo-btn {% if chart == 'category' %}active{% endif %}">View Spending by Category</button>
-    </form>
-</div>
+<div id="form-section">
+    <div class="demo-button-container">
+        <form method="POST" action="{{ url_for('demo_profile') }}#form-section">
+            <button type="submit" name="chart" value="purchases"
+                class="demo-btn {% if chart == 'purchases' %}active{% endif %}">View Purchases</button>
+        </form>
+        <form method="POST" action="{{ url_for('demo_profile') }}#form-section">
+            <button type="submit" name="chart" value="weekly"
+                class="demo-btn {% if chart == 'weekly' %}active{% endif %}">View Weekly Expenses</button>
+        </form>
+        <form method="POST" action="{{ url_for('demo_profile') }}#form-section">
+            <button type="submit" name="chart" value="category"
+                class="demo-btn {% if chart == 'category' %}active{% endif %}">View Spending by Category</button>
+        </form>
+    </div>
 
 
-{% if chart == 'purchases' %}
-<div id="demo-purchases" class="demo-table-container">
-    <h3>Purchases</h3>
-    <table class="demo-table">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Category</th>
-                <th>Price (₪)</th>
-                <th>Quantity</th>
-                <th>Total Cost (₪)</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for purchase in purchases %}
-            <tr>
-                <td>{{ purchase.prodName }}</td>
-                <td>{{ purchase.category }}</td>
-                <td>{{ purchase.price }}</td>
-                <td>{{ purchase.quantity }}</td>
-                <td>{{ purchase.price * purchase.quantity }}</td>
-                <td>{{ purchase.date }}</td>
-                <td>
-                    <div class="action-buttons">
-                        <a href="/update_purchase/{{ purchase.id }}" class="update-btn">Update</a>
-                        <a href="/delete_purchase/{{ purchase.id }}" class="delete-btn"
-                            onclick="return confirm('Are you sure you want to delete this purchase?')">Delete</a>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% elif chart == 'weekly' %}
-<div id="demo-weekly" class="demo-graph-container">
-    <img src="{{ url_for('static', filename='weekly_graph.png') }}" alt="Weekly Expenses Graph" />
-</div>
-{% elif chart == 'category' %}
-<div id="demo-category" class="demo-graph-container">
-    <img src="{{ url_for('static', filename='category_graph.png') }}" alt="Spending by Category Graph" />
-</div>
-{% endif %}
+    {% if chart == 'purchases' %}
+    <div id="form-section">
+        <div id="demo-purchases" class="demo-table-container">
+            <table class="demo-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price (₪)</th>
+                        <th>Quantity</th>
+                        <th>Total Cost (₪)</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase in purchases %}
+                    <tr>
+                        <td>{{ purchase.prodName }}</td>
+                        <td>{{ purchase.category }}</td>
+                        <td>{{ purchase.price }}</td>
+                        <td>{{ purchase.quantity }}</td>
+                        <td>{{ purchase.price * purchase.quantity }}</td>
+                        <td>{{ purchase.date }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/update_purchase/{{ purchase.id }}" class="update-btn">Update</a>
+                                <a href="/delete_purchase/{{ purchase.id }}" class="delete-btn"
+                                    onclick="return confirm('Are you sure you want to delete this purchase?')">Delete</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% elif chart == 'weekly' %}
+    <div id="form-section">
+        <div id="demo-weekly" class="demo-graph-container">
+            <img src="{{ url_for('static', filename='weekly_graph.png') }}" alt="Weekly Expenses Graph" />
+        </div>
+    </div>
+    {% elif chart == 'category' %}
+    <div id="form-section">
+        <div id="demo-category" class="demo-graph-container">
+            <img src="{{ url_for('static', filename='category_graph.png') }}" alt="Spending by Category Graph" />
+        </div>
+    </div>
+    {% endif %}
 
-<br>
-<a href="/register">Register to Access More Features</a>
+    <br>
+    <a href="/register">Register to Access More Features</a>
+</div>
 {% endblock %}
