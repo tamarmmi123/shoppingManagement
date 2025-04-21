@@ -414,7 +414,8 @@ def demo_profile():
 
     category_totals = df.groupby("category")["price"].sum()
 
-    category_graph_path = os.path.join(static_folder, "category_graph.png")    fig, ax = plt.subplots(figsize=(6, 6))
+    category_graph_path = os.path.join(static_folder, "category_graph.png")
+    fig, ax = plt.subplots(figsize=(6, 6))
     ax.pie(category_totals, labels=category_totals.index, autopct='%1.1f%%', startangle=140)
     ax.set_title("Spending by Category")
     plt.tight_layout()
