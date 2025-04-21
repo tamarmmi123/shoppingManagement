@@ -377,6 +377,9 @@ def category_expenses():
 
 @app.route("/demoProfile", methods=["GET", "POST"])
 def demo_profile():
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    static_folder = os.path.join(BASE_DIR, "static")
+
     prodNames = ["Laptop", "Phone", "Headphones", "Monitor", "Keyboard"]
     categories = ["Electronics", "Electronics", "Accessories", "Electronics", "Accessories"]
     
@@ -397,8 +400,8 @@ def demo_profile():
     df['Week End'] = df['date'].dt.to_period('W').apply(lambda r: r.end_time)
     df['Week Range'] = df.apply(lambda row: f"{row['Week Start'].strftime('%b %d')} - {row['Week End'].strftime('%b %d')}", axis=1)
     weekly_expenses = df.groupby('Week Range')['price'].sum()
+    weekly_graph_path = os.path.join(static_folder, "weekly_graph.png")
 
-    weekly_graph_path = os.path.join("static", "weekly_graph.png")
     fig, ax = plt.subplots(figsize=(10, 6))
     weekly_expenses.plot(kind='bar', ax=ax, color='#0e9e90')
     ax.set_xlabel("Week Range")
@@ -411,8 +414,7 @@ def demo_profile():
 
     category_totals = df.groupby("category")["price"].sum()
 
-    category_graph_path = os.path.join("static", "category_graph.png")
-    fig, ax = plt.subplots(figsize=(6, 6))
+    category_graph_path = os.path.join(static_folder, "category_graph.png")    fig, ax = plt.subplots(figsize=(6, 6))
     ax.pie(category_totals, labels=category_totals.index, autopct='%1.1f%%', startangle=140)
     ax.set_title("Spending by Category")
     plt.tight_layout()
