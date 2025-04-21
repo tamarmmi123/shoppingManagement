@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title>Store Products</title>
+{% endblock %}
+
+{% block body %}
+<h1>Store Products</h1>
+    <div id="store-products">
+        {% for product in store_products %}
+            <div class="product">
+                <span class="product-name">{{ product['prodName'] }}</span> -
+                <span class="product-price">{{ product['price'] }}</span>
+            </div>
+        {% endfor %}
+    </div>
+
+    <h2>Your Purchases</h2>
+    <form action="/compare_prices" method="POST">
+        <div>
+            <label for="prodName">Product Name:</label>
+            <input type="text" name="prodName" required>
+        </div>
+        <div>
+            <label for="price_paid">Price Paid (₪):</label>
+            <input type="number" step="0.01" name="price_paid" required>
+        </div>
+        <div>
+            <button type="submit">Compare Prices</button>
+        </div>
+    </form>
+
+    {% if cheaper_products %}
+        <h3>Cheaper Products Found:</h3>
+        <ul>
+            {% for product in cheaper_products %}
+                <li>
+                    <strong>{{ product['prodName'] }}:</strong> 
+                    Price Paid: ₪{{ product['price_paid'] }} - Store Price: ₪{{ product['store_price'] }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

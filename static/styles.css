@@ -278,6 +278,7 @@ form button {
     display: flex; 
     justify-content: center; 
     gap: 0; 
+    margin-top: 80px;
 }
 
 .demo-btn, .grpgh-btn {

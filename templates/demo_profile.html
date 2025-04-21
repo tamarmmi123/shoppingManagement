@@ -35,7 +35,7 @@
         <tbody>
             {% for purchase in purchases %}
             <tr>
-                <td>{{ purchase.product_name }}</td>
+                <td>{{ purchase.prodName }}</td>
                 <td>{{ purchase.category }}</td>
                 <td>{{ purchase.price }}</td>
                 <td>{{ purchase.quantity }}</td>
@@ -55,12 +55,10 @@
 </div>
 {% elif chart == 'weekly' %}
 <div id="demo-weekly" class="demo-graph-container">
-    <h3>Weekly Expenses</h3>
     <img src="{{ url_for('static', filename='weekly_graph.png') }}" alt="Weekly Expenses Graph" />
 </div>
 {% elif chart == 'category' %}
 <div id="demo-category" class="demo-graph-container">
-    <h3>Spending by Category</h3>
     <img src="{{ url_for('static', filename='category_graph.png') }}" alt="Spending by Category Graph" />
 </div>
 {% endif %}

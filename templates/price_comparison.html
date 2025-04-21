@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h1>Product Price Comparison</h1>
+
+{% if cheaper_products %}
+    <h2>Cheaper Products Found</h2>
+    <ul>
+        {% for product in cheaper_products %}
+            <li>
+                Product: {{ product.prodName }}<br>
+                Price Paid: {{ product.price_paid }} ₪<br>
+                Store Price: {{ product.store_price }} ₪
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No cheaper products found!</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title>Price Comparison Results</title>
+{% endblock %}
+
+{% block body %}
+<h1>Cheaper Products Found</h1>
+    
+{% if cheaper_products %}
+    <ul>
+        {% for product in cheaper_products %}
+            <li>
+                <strong>Product:</strong> {{ product["prodName"] }}<br>
+                <strong>Your Price:</strong> ₪{{ product["price_paid"] }}<br>
+                <strong>Store Price:</strong> ₪{{ product["store_price"] }}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No cheaper products found.</p>
+{% endif %}
+{% endblock %}

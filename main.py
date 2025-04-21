@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, render_template, redirect, url_for, session, flash, Response
+from flask import Flask, request, send_file, render_template, redirect, url_for, session, flash, Response, render_template_string
 from models import db
 from models.User import User
 from models.Purchase import Purchase
@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import io
 import os
 import numpy as np
+from bs4 import BeautifulSoup
 
 
 
@@ -39,7 +40,7 @@ def login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
-        
+
         user = User.query.filter_by(email=email).first()
 
         if not email or not password:
@@ -125,7 +126,7 @@ def logout():
 
 
 
-@app.route("/purchases", methods=["GET"])
+@app.route("/purchases", methods=["GET", "POST"])
 def purchases():
     if "user_id" not in session:
         flash("You must be logged in to view purchases!", "danger")
@@ -137,12 +138,18 @@ def purchases():
         flash("User not found!", "danger")
         return redirect(url_for("logout"))
 
-    user_purchases = Purchase.query.filter_by(user_id=user.id).all()
+    chart = "purchases"
 
+    if request.method == "POST":
+        chart = request.form.get("chart", "purchases")
+
+    purchases = Purchase.query.filter_by(user_id=user.id).all()
     categories = ["Food", "Transport", "Clothing", "Entertainment", "Other"]
 
-    return render_template("purchases.html", user=user, purchases=user_purchases, categories=categories)
-
+    weekly_graph = url_for('static', filename='user_weekly_graph.png')
+    category_graph = url_for('static', filename='user_category_graph.png')
+    
+    return render_template("purchases.html",user=user,purchases=purchases,categories=categories,chart=chart,weekly_graph=weekly_graph,category_graph=category_graph)
 
 from datetime import datetime
 
@@ -324,7 +331,7 @@ def weekly_expenses():
     ax.grid(axis='y', linestyle='--', alpha=0.7)
 
     output = io.BytesIO()
-    plt.savefig(output, format='png', bbox_inches='tight') 
+    plt.savefig(output, format='png', bbox_inches='tight', transparent=True) 
     plt.close(fig)
     output.seek(0)
     return Response(output.getvalue(), mimetype='image/png')
@@ -363,20 +370,20 @@ def category_expenses():
     ax.set_title("Category Expenses")
 
     output = io.BytesIO()
-    plt.savefig(output, format='png', bbox_inches='tight')
+    plt.savefig(output, format='png', bbox_inches='tight', transparent=True)
     plt.close(fig)
     output.seek(0)
     return Response(output.getvalue(), mimetype='image/png')
 
 @app.route("/demoProfile", methods=["GET", "POST"])
 def demo_profile():
-    product_names = ["Laptop", "Phone", "Headphones", "Monitor", "Keyboard"]
+    prodNames = ["Laptop", "Phone", "Headphones", "Monitor", "Keyboard"]
     categories = ["Electronics", "Electronics", "Accessories", "Electronics", "Accessories"]
     
     num_purchases = 10
     data = {
         "id": np.arange(1, num_purchases + 1),
-        "product_name": np.random.choice(product_names, num_purchases),
+        "prodName": np.random.choice(prodNames, num_purchases),
         "price": np.round(np.random.uniform(20, 1000, num_purchases), 2),
         "quantity": np.random.randint(1, 5, num_purchases),
         "category": np.random.choice(categories, num_purchases),
@@ -393,13 +400,13 @@ def demo_profile():
 
     weekly_graph_path = os.path.join("static", "weekly_graph.png")
     fig, ax = plt.subplots(figsize=(10, 6))
-    weekly_expenses.plot(kind='bar', ax=ax, color='orange')
+    weekly_expenses.plot(kind='bar', ax=ax, color='#0e9e90')
     ax.set_xlabel("Week Range")
     ax.set_ylabel("Total Spent (₪)")
     ax.set_title("Weekly Spending")
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig(weekly_graph_path)
+    plt.savefig(weekly_graph_path, transparent=True)
     plt.close()
 
     category_totals = df.groupby("category")["price"].sum()
@@ -409,7 +416,7 @@ def demo_profile():
     ax.pie(category_totals, labels=category_totals.index, autopct='%1.1f%%', startangle=140)
     ax.set_title("Spending by Category")
     plt.tight_layout()
-    plt.savefig(category_graph_path)
+    plt.savefig(category_graph_path, transparent=True)
     plt.close()
 
     chart = request.form.get('chart', 'purchases') 
@@ -420,6 +427,78 @@ def demo_profile():
                            weekly_graph_path=weekly_graph_path, 
                            category_graph_path=category_graph_path)
 
+
+@app.route('/compare_prices', methods=['POST'])
+def compare_prices():
+    if "user_id" not in session:
+        flash("You must be logged in to view purchases!", "danger")
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+    
+    if not user:
+        flash("User not found!", "danger")
+        return redirect(url_for("logout"))
+
+    user_purchases_query = Purchase.query.filter_by(user_id=user.id).all()
+    
+    user_purchases = [
+        {"prodName": p.prodName, "price_paid": p.price}
+        for p in user_purchases_query
+    ]
+
+    store_products_data = [
+    {"prodName": "Milk", "price": 4.50},
+    {"prodName": "Shampoo", "price": 10.99},
+    {"prodName": "Toothpaste", "price": 7.30},
+    {"prodName": "Bread", "price": 3.20},
+    {"prodName": "Cheese", "price": 15.60},
+    {"prodName": "Notebook", "price": 12.75},
+    {"prodName": "Ballpoint Pens", "price": 6.30},
+    {"prodName": "Trash Bags", "price": 14.00},
+    {"prodName": "Hand Soap", "price": 5.20},
+    {"prodName": "Batteries (AA)", "price": 18.90},
+    {"prodName": "Sticky Notes", "price": 3.10},
+    {"prodName": "Tissue Box", "price": 7.40},
+    {"prodName": "Coffee Mug", "price": 16.25},
+    {"prodName": "Alarm Clock", "price": 39.99}
+]
+
+
+    rendered_html = render_template_string(
+        """
+        <div id="store-products">
+            {% for product in store_products %}
+                <div class="product">
+                    <span class="product-name">{{ product['prodName'] }}</span> -
+                    <span class="product-price">{{ product['price'] }}</span>
+                </div>
+            {% endfor %}
+        </div>
+        """,
+        store_products=store_products_data
+    )
+
+    soup = BeautifulSoup(rendered_html, 'html.parser')
+
+    prodNames = [tag.text.strip() for tag in soup.find_all("span", class_="product-name")]
+    product_prices = [float(tag.text.strip()) for tag in soup.find_all("span", class_="product-price")]
+
+    store_products = [{"prodName": name, "price": price} for name, price in zip(prodNames, product_prices)]
+
+    cheaper_products = []
+
+    for user_purchase in user_purchases:
+        for store_product in store_products:
+            if store_product["prodName"].lower() == user_purchase["prodName"].lower():
+                if store_product["price"] < user_purchase["price_paid"]:
+                    cheaper_products.append({
+                        "prodName": user_purchase["prodName"],
+                        "price_paid": user_purchase["price_paid"],
+                        "store_price": store_product["price"]
+                    })
+
+    return render_template('results.html', cheaper_products=cheaper_products)
 
 
 if __name__ == "__main__":
