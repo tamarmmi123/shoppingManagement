@@ -92,7 +92,7 @@
         <input type="number" step="0.01" name="price" placeholder="Price" required>
         <label for="category">Category:</label>
         <select name="category" required>
-            {% for category in categories %}
+            {% for category in categories or [] %}
             <option value="{{ category }}">{{ category }}</option>
             {% endfor %}
         </select>
@@ -104,13 +104,13 @@
 {% elif chart == 'weekly' %}
 <div id="form-section">
     <div class="demo-graph-container">
-        <img src="{{ url_for('weekly_expenses') }}" alt="Weekly Expenses Graph">
+        <img src="{{ url_for('static', filename='weekly_graph.png') }}" alt="Weekly Expenses Graph">
     </div>
 </div>
 {% elif chart == 'category' %}
 <div id="form-section">
     <div class="demo-graph-container">
-        <img src="{{ url_for('category_expenses') }}" alt="Category Expenses Graph">
+        <img src="{{ url_for('static', filename='category_graph.png') }}" alt="Category Spending Graph">
     </div>
 </div>
 {% endif %}

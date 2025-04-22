@@ -143,11 +143,16 @@ def purchases():
     if request.method == "POST":
         chart = request.form.get("chart", "purchases")
 
+
+    weekly_expenses(user.id)
+    category_expenses(user.id)
+
+    weekly_graph = url_for('static', filename='weekly_graph.png')
+    category_graph = url_for('static', filename='category_graph.png')
+
     purchases = Purchase.query.filter_by(user_id=user.id).all()
     categories = ["Food", "Transport", "Clothing", "Entertainment", "Other"]
 
-    weekly_graph = url_for('static', filename='user_weekly_graph.png')
-    category_graph = url_for('static', filename='user_category_graph.png')
     
     return render_template("purchases.html",user=user,purchases=purchases,categories=categories,chart=chart,weekly_graph=weekly_graph,category_graph=category_graph)
 
@@ -162,9 +167,6 @@ def add_purchase():
     
     category = request.form['category']
     
-    if category == "Other" and request.form.get('custom_category'):
-        category = request.form['custom_category'].strip()
-
     date_str = request.form['date'] 
     date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
 
@@ -180,12 +182,15 @@ def add_purchase():
     db.session.add(new_purchase)
     db.session.commit()
 
+    weekly_expenses(session["user_id"])
+    category_expenses(session["user_id"])
+
     return redirect(url_for('purchases'))
     
 @app.route('/update_purchase/<int:id>', methods=['GET', 'POST'])
 def update_purchase(id):
     if "user_id" not in session:
-        return redirect(url_for('register')) 
+        return redirect(url_for('login')) 
 
     categories = ["Food", "Transport", "Clothing", "Entertainment"]
     purchase = Purchase.query.get_or_404(id)
@@ -193,9 +198,6 @@ def update_purchase(id):
     if request.method == "POST":
         category = request.form['category']
         
-        if category == "Other" and request.form.get('custom_category'):
-            category = request.form['custom_category'].strip()
-
         purchase.prodName = request.form['prodName']
         purchase.qty = int(request.form['qty'])
         purchase.price = float(request.form['price'])
@@ -203,6 +205,10 @@ def update_purchase(id):
         purchase.date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
 
         db.session.commit()
+
+        weekly_expenses(session["user_id"])
+        category_expenses(session["user_id"])
+
         return redirect(url_for('purchases', user_id=session["user_id"]))  
 
     return render_template('updatePurchase.html', 
@@ -226,6 +232,10 @@ def delete_purchase(id):
     
     db.session.delete(purchase)
     db.session.commit()
+
+    weekly_expenses(session["user_id"])
+    category_expenses(session["user_id"])
+    
     return redirect(url_for("purchases"))
 
 @app.route("/filter_purchases", methods=["GET"])
@@ -256,15 +266,27 @@ def filter_purchases():
 
     filtered_purchases = query.all()
 
-    return render_template("purchases.html", purchases=filtered_purchases)
+    categories = db.session.query(Purchase.category).filter_by(user_id=user_id).distinct().all()
+    categories = [c[0] for c in categories]
+
+    return render_template("purchases.html", 
+                           purchases=filtered_purchases, 
+                           chart="purchases", 
+                           categories=categories)
 
 
 
 @app.route('/saveData')
 def save_data():
-    purchases = Purchase.query.all()
+    if "user_id" not in session:
+        flash("You must be logged in to filter purchases!", "danger")
+        return redirect(url_for("login"))
+    
+    user_id = session["user_id"]
+    purchases = Purchase.query.filter_by(user_id=user_id)
+    
     data = [
-        {"Product Name": p.prodName, "Quantity": p.qty, "Price": p.price, "category": p.category, "date": p.date}
+        {"Product Name": p.prodName, "Quantity": p.qty, "Price": p.price, "category": p.category, "Date": p.date.strftime('%Y-%m-%d')}
         for p in purchases
     ]
     
@@ -274,30 +296,24 @@ def save_data():
 
     return send_file(file_path, as_attachment=True)
 
-
-def generate_empty_plot():
-    """Creates an empty plot if no data is available."""
-    fig, ax = plt.subplots()
-    ax.text(0.5, 0.5, "No Data Available", fontsize=12, ha='center', va='center')
-    ax.set_axis_off()
-
-    output = io.BytesIO()
-    plt.savefig(output, format='png')
-    plt.close(fig)
-    output.seek(0)
-    return Response(output.getvalue(), mimetype='image/png')
-
 def get_purchases(user_id):
     purchases = Purchase.query.filter_by(user_id=user_id).all()
     return purchases
 
-@app.route('/weekly-expenses')
-def weekly_expenses():
+
+def weekly_expenses(user_id):
     if "user_id" not in session:
         return "Unauthorized", 403
 
-    user_id = session["user_id"]
-    purchases = get_purchases(user_id)  
+    purchases = get_purchases(user_id) 
+    if not purchases:
+        fig, ax = plt.subplots(figsize=(6, 4))
+        ax.text(0.5, 0.5, "No purchases yet!", ha="center", va="center", fontsize=14)
+        ax.axis('off')
+        output_path = os.path.join("static", "weekly_graph.png")
+        plt.savefig(output_path, bbox_inches='tight', transparent=True)
+        plt.close(fig)
+        return 
     
     data = [{
         'category': p.category,
@@ -309,41 +325,38 @@ def weekly_expenses():
     
     df = pd.DataFrame(data)
 
-    if df.empty:
-        return generate_empty_plot()
-
     df['date'] = pd.to_datetime(df['date'])
-
     df['Week Start'] = df['date'].dt.to_period('W').apply(lambda r: r.start_time)
     df['Week End'] = df['date'].dt.to_period('W').apply(lambda r: r.end_time)
-
     df['Week Range'] = df.apply(lambda row: f"{row['Week Start'].strftime('%b %d')} - {row['Week End'].strftime('%b %d')}", axis=1)
 
     weekly_expenses = df.groupby('Week Range')['cost'].sum()
 
     fig, ax = plt.subplots(figsize=(14, 6))
     weekly_expenses.plot(kind='bar', title="Weekly Expenses", ax=ax, width=0.8)
-
     ax.set_ylabel('Total Cost')
     ax.set_xlabel('Week')
     ax.set_xticklabels(weekly_expenses.index, rotation=0, ha='center') 
-
     ax.grid(axis='y', linestyle='--', alpha=0.7)
 
-    output = io.BytesIO()
-    plt.savefig(output, format='png', bbox_inches='tight', transparent=True) 
+    output_path = os.path.join("static", "weekly_graph.png")
+    plt.tight_layout()
+    plt.savefig(output_path, format='png', bbox_inches='tight', transparent=True)
     plt.close(fig)
-    output.seek(0)
-    return Response(output.getvalue(), mimetype='image/png')
 
-@app.route('/category-expenses')
-def category_expenses():
-    """Generate a pie chart of expenses by category with a legend."""
+def category_expenses(user_id):
     if "user_id" not in session:
         return "Unauthorized", 403
 
-    user_id = session["user_id"]
-    purchases = get_purchases(user_id)  
+    purchases = get_purchases(user_id)
+    if not purchases:
+        fig, ax = plt.subplots(figsize=(6, 4))
+        ax.text(0.5, 0.5, "No purchases yet!", ha="center", va="center", fontsize=14)
+        ax.axis('off')
+        output_path = os.path.join("static", "category_graph.png")
+        plt.savefig(output_path, bbox_inches='tight', transparent=True)
+        plt.close(fig)
+        return
     
     data = [{
         'category': p.category,
@@ -354,9 +367,6 @@ def category_expenses():
     } for p in purchases]
 
     df = pd.DataFrame(data)
-
-    if df.empty:
-        return generate_empty_plot()
 
     category_expenses = df.groupby('category')['cost'].sum()
 
@@ -369,11 +379,10 @@ def category_expenses():
 
     ax.set_title("Category Expenses")
 
-    output = io.BytesIO()
-    plt.savefig(output, format='png', bbox_inches='tight', transparent=True)
+    output_path = os.path.join("static", "category_graph.png")
+    plt.tight_layout()
+    plt.savefig(output_path, format='png', bbox_inches='tight', transparent=True)
     plt.close(fig)
-    output.seek(0)
-    return Response(output.getvalue(), mimetype='image/png')
 
 @app.route("/demoProfile", methods=["GET", "POST"])
 def demo_profile():
