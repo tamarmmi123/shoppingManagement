@@ -21,7 +21,7 @@ app.secret_key = "my_secret_key"
 
 DATABASE = "shoppingManagement.db"
 
-CATEGORIES = ["Food", "Transport", "Clothing", "Entertainment"]
+CATEGORIES = ["Food", "Transport", "Clothing", "Entertainment", "Other"]
 
 db.init_app(app)
 
@@ -112,7 +112,7 @@ def update_password(id):
         
         user.password = new_password
         db.session.commit()
-        success_message = "Purchase updated successfully!"
+        success_message = "Password updated successfully!"
         return redirect(url_for("index"))
     
     else:
@@ -129,13 +129,11 @@ def logout():
 @app.route("/purchases", methods=["GET", "POST"])
 def purchases():
     if "user_id" not in session:
-        flash("You must be logged in to view purchases!", "danger")
         return redirect(url_for("login"))
 
     user = User.query.get(session["user_id"])
     
     if not user:
-        flash("User not found!", "danger")
         return redirect(url_for("logout"))
 
     chart = "purchases"
@@ -151,10 +149,9 @@ def purchases():
     category_graph = url_for('static', filename='category_graph.png')
 
     purchases = Purchase.query.filter_by(user_id=user.id).all()
-    categories = ["Food", "Transport", "Clothing", "Entertainment", "Other"]
 
     
-    return render_template("purchases.html",user=user,purchases=purchases,categories=categories,chart=chart,weekly_graph=weekly_graph,category_graph=category_graph)
+    return render_template("purchases.html",user=user,purchases=purchases,categories=CATEGORIES,chart=chart,weekly_graph=weekly_graph,category_graph=category_graph)
 
 from datetime import datetime
 
@@ -162,8 +159,6 @@ from datetime import datetime
 def add_purchase():
     if "user_id" not in session:
         return redirect(url_for('register')) 
-
-    categories = ["Food", "Transport", "Clothing", "Entertainment"]
     
     category = request.form['category']
     
@@ -192,7 +187,6 @@ def update_purchase(id):
     if "user_id" not in session:
         return redirect(url_for('login')) 
 
-    categories = ["Food", "Transport", "Clothing", "Entertainment"]
     purchase = Purchase.query.get_or_404(id)
 
     if request.method == "POST":
@@ -213,7 +207,7 @@ def update_purchase(id):
 
     return render_template('updatePurchase.html', 
                            purchase=purchase, 
-                           categories=categories, 
+                           categories=CATEGORIES, 
                            formatted_date=purchase.date.strftime('%Y-%m-%d'))
 
 
@@ -241,7 +235,6 @@ def delete_purchase(id):
 @app.route("/filter_purchases", methods=["GET"])
 def filter_purchases():
     if "user_id" not in session:
-        flash("You must be logged in to filter purchases!", "danger")
         return redirect(url_for("login"))
 
     user_id = session["user_id"]
@@ -279,7 +272,6 @@ def filter_purchases():
 @app.route('/saveData')
 def save_data():
     if "user_id" not in session:
-        flash("You must be logged in to filter purchases!", "danger")
         return redirect(url_for("login"))
     
     user_id = session["user_id"]
@@ -303,7 +295,7 @@ def get_purchases(user_id):
 
 def weekly_expenses(user_id):
     if "user_id" not in session:
-        return "Unauthorized", 403
+        return redirect(url_for("login"))
 
     purchases = get_purchases(user_id) 
     if not purchases:
@@ -346,7 +338,7 @@ def weekly_expenses(user_id):
 
 def category_expenses(user_id):
     if "user_id" not in session:
-        return "Unauthorized", 403
+        return redirect(url_for("login"))
 
     purchases = get_purchases(user_id)
     if not purchases:
@@ -414,7 +406,6 @@ def demo_profile():
     "Park", "Trip fee", 
     "Gift", "Repair Service"
     ]
-    categories = ["Food", "Transport", "Clothing", "Entertainment", "Other"]
     
     num_purchases = 10
     data = {
@@ -422,7 +413,7 @@ def demo_profile():
         "prodName": np.random.choice(prodNames, num_purchases),
         "price": np.round(np.random.uniform(20, 1000, num_purchases), 2),
         "quantity": np.random.randint(1, 5, num_purchases),
-        "category": np.random.choice(categories, num_purchases),
+        "category": np.random.choice(CATEGORIES, num_purchases),
         "date": pd.date_range(end=pd.Timestamp.today(), periods=num_purchases).strftime('%Y-%m-%d')
     }
 
@@ -491,55 +482,19 @@ def demo_profile():
 @app.route('/compare_prices', methods=['POST'])
 def compare_prices():
     if "user_id" not in session:
-        flash("You must be logged in to view purchases!", "danger")
         return redirect(url_for("login"))
 
     user = User.query.get(session["user_id"])
-    
     if not user:
-        flash("User not found!", "danger")
-        return redirect(url_for("logout"))
+        return redirect(url_for("login"))
 
-    user_purchases_query = Purchase.query.filter_by(user_id=user.id).all()
-    
     user_purchases = [
         {"prodName": p.prodName, "price_paid": p.price}
-        for p in user_purchases_query
+        for p in Purchase.query.filter_by(user_id=user.id).all()
     ]
 
-    store_products_data = [
-    {"prodName": "Milk", "price": 4.50},
-    {"prodName": "Shampoo", "price": 10.99},
-    {"prodName": "Toothpaste", "price": 7.30},
-    {"prodName": "Bread", "price": 3.20},
-    {"prodName": "Cheese", "price": 15.60},
-    {"prodName": "Notebook", "price": 12.75},
-    {"prodName": "Ballpoint Pens", "price": 6.30},
-    {"prodName": "Trash Bags", "price": 14.00},
-    {"prodName": "Hand Soap", "price": 5.20},
-    {"prodName": "Batteries (AA)", "price": 18.90},
-    {"prodName": "Sticky Notes", "price": 3.10},
-    {"prodName": "Tissue Box", "price": 7.40},
-    {"prodName": "Coffee Mug", "price": 16.25},
-    {"prodName": "Alarm Clock", "price": 39.99}
-]
-
-
-    rendered_html = render_template_string(
-        """
-        <div id="store-products">
-            {% for product in store_products %}
-                <div class="product">
-                    <span class="product-name">{{ product['prodName'] }}</span> -
-                    <span class="product-price">{{ product['price'] }}</span>
-                </div>
-            {% endfor %}
-        </div>
-        """,
-        store_products=store_products_data
-    )
-
-    soup = BeautifulSoup(rendered_html, 'html.parser')
+    with open('store_products.html', 'r', encoding='utf-8') as f:
+        soup = BeautifulSoup(f, 'html.parser')
 
     prodNames = [tag.text.strip() for tag in soup.find_all("span", class_="product-name")]
     product_prices = [float(tag.text.strip()) for tag in soup.find_all("span", class_="product-price")]
@@ -547,19 +502,16 @@ def compare_prices():
     store_products = [{"prodName": name, "price": price} for name, price in zip(prodNames, product_prices)]
 
     cheaper_products = []
-
     for user_purchase in user_purchases:
         for store_product in store_products:
-            if store_product["prodName"].lower() == user_purchase["prodName"].lower():
-                if store_product["price"] < user_purchase["price_paid"]:
-                    cheaper_products.append({
-                        "prodName": user_purchase["prodName"],
-                        "price_paid": user_purchase["price_paid"],
-                        "store_price": store_product["price"]
-                    })
+            if store_product["prodName"].lower() == user_purchase["prodName"].lower() and store_product["price"] < user_purchase["price_paid"]:
+                cheaper_products.append({
+                    "prodName": user_purchase["prodName"],
+                    "price_paid": user_purchase["price_paid"],
+                    "store_price": store_product["price"]
+                })
 
     return render_template('results.html', cheaper_products=cheaper_products)
-
 
 if __name__ == "__main__":
     app.run(debug=True)
