@@ -5,19 +5,19 @@
 {% endblock %}
 
 {% block body %}
-<h1>Cheaper Products Found</h1>
-    
-{% if cheaper_products %}
-    <ul>
+<div class="price-comparison">
+    <h1>Cheaper Products Found</h1>
+
+    {% if cheaper_products %}
         {% for product in cheaper_products %}
-            <li>
+            <div class="price-item">
                 <strong>Product:</strong> {{ product["prodName"] }}<br>
                 <strong>Your Price:</strong> ₪{{ product["price_paid"] }}<br>
                 <strong>Store Price:</strong> ₪{{ product["store_price"] }}
-            </li>
+            </div>
         {% endfor %}
-    </ul>
-{% else %}
-    <p>No cheaper products found.</p>
-{% endif %}
+    {% else %}
+        <p class="no-results">No cheaper products found.</p>
+    {% endif %}
+</div>
 {% endblock %}

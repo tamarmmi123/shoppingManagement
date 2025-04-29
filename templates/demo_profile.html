@@ -30,10 +30,11 @@
                     <tr>
                         <th>Product</th>
                         <th>Category</th>
-                        <th>Price (₪)</th>
                         <th>Quantity</th>
+                        <th>Price (₪)</th>
                         <th>Total Cost (₪)</th>
                         <th>Date</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,15 +42,17 @@
                     <tr>
                         <td>{{ purchase.prodName }}</td>
                         <td>{{ purchase.category }}</td>
-                        <td>{{ purchase.price }}</td>
                         <td>{{ purchase.quantity }}</td>
+                        <td>{{ purchase.price }}</td>
                         <td>{{ purchase.price * purchase.quantity }}</td>
-                        <td>{{ purchase.date }}</td>
+                        <td>{{ purchase.date.strftime('%b %d, %Y') }}</td>
                         <td>
                             <div class="action-buttons">
-                                <a href="/update_purchase/{{ purchase.id }}" class="update-btn">Update</a>
-                                <a href="/delete_purchase/{{ purchase.id }}" class="delete-btn"
-                                    onclick="return confirm('Are you sure you want to delete this purchase?')">Delete</a>
+                                <a href="/update_purchase/{{ purchase.id }}" class="update-btn disabled">Update</a>
+                                <a href="/delete_purchase/{{ purchase.id }}" class="disabled"
+                                    onclick="return !this.classList.contains('disabled') && confirm('Are you sure you want to delete this purchase?')">
+                                    Delete
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -72,7 +75,6 @@
     </div>
     {% endif %}
 
-    <br>
-    <a href="/register">Register to Access More Features</a>
+    <a href="/register" class="rgsLink">Register to Access More Features</a>
 </div>
 {% endblock %}

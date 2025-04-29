@@ -19,6 +19,9 @@
         <button type="submit" name="chart" value="category"
             class="grpgh-btn {% if chart == 'category' %}active{% endif %}">View Spending by Category</button>
     </form>
+    <form method="POST" action="{{ url_for('compare_prices') }}">
+        <button type="submit" class="grpgh-btn">Compare Prices</button>
+    </form>
     <form action="{{ url_for('save_data') }}" method="get">
         <button type="submit" class="grpgh-btn">Backup Data</button>
     </form>
@@ -43,11 +46,8 @@
             <input type="date" name="start_date" value="{{ request.args.get('start_date', '') }}">
             <label for="end_date">End Date:</label>
             <input type="date" name="end_date" value="{{ request.args.get('end_date', '') }}">
-            <button type="submit">Apply</button>
+            <button type="submit" class="crud-btn">Apply</button>
             {% endif %}
-        </form>
-        <form method="POST" action="{{ url_for('compare_prices') }}">
-            <button type="submit">Compare Prices</button>
         </form>
     </div>
 
@@ -60,8 +60,8 @@
                 <th>Product Name</th>
                 <th>Quantity</th>
                 <th>Price (₪)</th>
-                <th>Category</th>
                 <th>Total Cost (₪)</th>
+                <th>Category</th>
                 <th>Date</th>
                 <th>Actions</th>
             </tr>
@@ -70,13 +70,13 @@
                 <td>{{ purchase.prodName }}</td>
                 <td>{{ purchase.qty }}</td>
                 <td>{{ purchase.price }}</td>
-                <td>{{ purchase.category }}</td>
                 <td>{{ purchase.price * purchase.qty }}</td>
-                <td>{{ purchase.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ purchase.category }}</td>
+                <td>{{ purchase.date.strftime('%b %d, %Y') }}</td>
                 <td>
                     <div class="action-buttons">
-                        <a href="/update_purchase/{{ purchase.id }}" class="update-btn">Update</a>
-                        <a href="/delete_purchase/{{ purchase.id }}" class="delete-btn"
+                        <a href="/update_purchase/{{ purchase.id }}">Update</a>
+                        <a href="/delete_purchase/{{ purchase.id }}"
                             onclick="return confirm('Are you sure you want to delete this purchase?')">Delete</a>
                     </div>
                 </td>
@@ -97,7 +97,7 @@
             {% endfor %}
         </select>
         <input type="date" name="date" required>
-        <button type="submit">Add Purchase</button>
+        <button type="submit" class="crud-btn">Add Purchase</button>
     </form>
 </div>
 

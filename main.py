@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file, render_template, redirect, url_for, session, flash, Response, render_template_string
+from flask import Flask, request, send_file, render_template, redirect, url_for, session, flash, render_template_string
 from models import db
 from models.User import User
 from models.Purchase import Purchase
@@ -7,7 +7,6 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import io
 import os
 import numpy as np
 from bs4 import BeautifulSoup
@@ -87,7 +86,6 @@ def update_password(id):
     success_message = None
     
     if "user_id" not in session or session["user_id"] != id:
-        error_message = "You must be logged in to add a purchase!"
         return redirect(url_for("login"))
     
     user = User.query.get(id)
@@ -95,6 +93,9 @@ def update_password(id):
     if not user:
         error_message = "User not found!"
         return redirect(url_for("purchases"))
+
+    if request.method == "GET":
+        return render_template("updatePassword.html", error_message=error_message, success_message=success_message)
 
     if request.method == "POST":
         email = request.form["email"]
@@ -106,7 +107,7 @@ def update_password(id):
             return redirect(url_for("update_password", id=id))
     
         if user.password != current_password:
-            error_message = "Incorrect current password!"
+            error_message = "Incorrect password!"
             return redirect(url_for("update_password", id=id))
         
         user.password = new_password
@@ -121,7 +122,6 @@ def update_password(id):
 @app.route("/logout")
 def logout():
     session.clear()
-    flash("You have been logged out!", "info")
     return redirect(url_for("index"))
 
 
@@ -333,7 +333,7 @@ def weekly_expenses(user_id):
     weekly_expenses = df.groupby('Week Range')['cost'].sum()
 
     fig, ax = plt.subplots(figsize=(14, 6))
-    weekly_expenses.plot(kind='bar', title="Weekly Expenses", ax=ax, width=0.8)
+    weekly_expenses.plot(kind='bar', title="Weekly Expenses", ax=ax, width=0.8, color='#0e9e90')
     ax.set_ylabel('Total Cost')
     ax.set_xlabel('Week')
     ax.set_xticklabels(weekly_expenses.index, rotation=0, ha='center') 
@@ -370,13 +370,30 @@ def category_expenses(user_id):
 
     category_expenses = df.groupby('category')['cost'].sum()
 
+    custom_colors = ['#07E9CE', '#FF8606', '#E85857', '#042348']
+    num_categories = len(category_expenses)
+    colors = custom_colors[:num_categories]
+
+    if num_categories > len(custom_colors):
+        from itertools import cycle, islice
+        default_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        extended_colors = list(islice(cycle(default_colors), num_categories - len(custom_colors)))
+        colors.extend(extended_colors)
+
     fig, ax = plt.subplots(figsize=(10, 6))
     wedges, texts, autotexts = ax.pie(
-        category_expenses, labels=None, autopct='%1.1f%%', startangle=140
+        category_expenses,
+        labels=None,
+        autopct='%1.1f%%',
+        startangle=140,
+        colors=colors
     )
+    for autotext in autotexts:
+        autotext.set_color('white')
+        autotext.set_fontweight('bold')
+        autotext.set_fontsize('larger')
 
     ax.legend(wedges, category_expenses.index, title="Categories", loc="center left", bbox_to_anchor=(1, 0.5))
-
     ax.set_title("Category Expenses")
 
     output_path = os.path.join("static", "category_graph.png")
@@ -384,13 +401,20 @@ def category_expenses(user_id):
     plt.savefig(output_path, format='png', bbox_inches='tight', transparent=True)
     plt.close(fig)
 
+
 @app.route("/demoProfile", methods=["GET", "POST"])
 def demo_profile():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     static_folder = os.path.join(BASE_DIR, "static")
 
-    prodNames = ["Laptop", "Phone", "Headphones", "Monitor", "Keyboard"]
-    categories = ["Electronics", "Electronics", "Accessories", "Electronics", "Accessories"]
+    prodNames = [
+    "Pizza", "Burger", "Salad",
+    "Bus Ticket", "Taxi Fare", 
+    "Shirt", "Dress",
+    "Park", "Trip fee", 
+    "Gift", "Repair Service"
+    ]
+    categories = ["Food", "Transport", "Clothing", "Entertainment", "Other"]
     
     num_purchases = 10
     data = {
@@ -423,13 +447,37 @@ def demo_profile():
 
     category_totals = df.groupby("category")["price"].sum()
 
+    custom_colors = ['#07E9CE', '#FF8606', '#E85857', '#042348']
+    num_categories = len(category_totals)
+    colors = custom_colors[:num_categories]
+
+    if num_categories > len(custom_colors):
+        from itertools import cycle, islice
+        default_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        extended_colors = list(islice(cycle(default_colors), num_categories - len(custom_colors)))
+        colors.extend(extended_colors)
+
     category_graph_path = os.path.join(static_folder, "category_graph.png")
     fig, ax = plt.subplots(figsize=(6, 6))
-    ax.pie(category_totals, labels=category_totals.index, autopct='%1.1f%%', startangle=140)
+    wedges, texts, autotexts = ax.pie(
+        category_totals,
+        labels=category_totals.index,
+        autopct='%1.1f%%',
+        startangle=140,
+        colors=colors
+    )
+
+    for autotext in autotexts:
+        autotext.set_color('white')
+        autotext.set_fontweight('bold')
+        autotext.set_fontsize('larger')
+
     ax.set_title("Spending by Category")
     plt.tight_layout()
     plt.savefig(category_graph_path, transparent=True)
     plt.close()
+
+
 
     chart = request.form.get('chart', 'purchases') 
 
