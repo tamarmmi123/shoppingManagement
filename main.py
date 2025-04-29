@@ -493,7 +493,7 @@ def compare_prices():
         for p in Purchase.query.filter_by(user_id=user.id).all()
     ]
 
-    with open('store_products.html', 'r', encoding='utf-8') as f:
+    with open('templates/store_products.html', 'r', encoding='utf-8') as f:
         soup = BeautifulSoup(f, 'html.parser')
 
     prodNames = [tag.text.strip() for tag in soup.find_all("span", class_="product-name")]
